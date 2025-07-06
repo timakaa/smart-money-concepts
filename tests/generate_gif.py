@@ -11,7 +11,8 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(os.path.abspath("../"))
-from smartmoneyconcepts.smc import smc
+from smartmoneyconcepts.core import SMC
+from smartmoneyconcepts.core.utils import validate_ohlc_data
 
 
 def add_FVG(fig, df, fvg_data):
@@ -450,8 +451,8 @@ def fig_to_buffer(fig):
 
 # Use local test data instead of Binance API
 df = pd.read_csv("tests/test_data/EURUSD/EURUSD_15M.csv")
-# Convert column names to lowercase
-df.columns = df.columns.str.lower()
+# Convert column names to lowercase and validate data
+df = validate_ohlc_data(df)
 df = df.iloc[-100:]  # Get 40 candles
 
 gif = []
@@ -475,14 +476,15 @@ for pos in tqdm(range(window, len(df), step)):
         ]
     )
 
-    fvg_data = smc.fvg(window_df, join_consecutive=True)
-    swing_highs_lows_data = smc.swing_highs_lows(window_df, swing_length=5)
-    bos_choch_data = smc.bos_choch(window_df, swing_highs_lows_data)
-    ob_data = smc.ob(window_df, swing_highs_lows_data)
-    liquidity_data = smc.liquidity(window_df, swing_highs_lows_data)
-    previous_high_low_data = smc.previous_high_low(window_df, time_frame="4h")
-    sessions = smc.sessions(window_df, session="London")
-    retracements = smc.retracements(window_df, swing_highs_lows_data)
+    fvg_data = SMC.fvg(window_df, join_consecutive=True)
+    swing_highs_lows_data = SMC.swing_highs_lows(window_df, swing_length=5)
+    bos_choch_data = SMC.bos_choch(window_df, swing_highs_lows_data)
+    ob_data = SMC.ob(window_df, swing_highs_lows_data)
+    liquidity_data = SMC.liquidity(window_df, swing_highs_lows_data)
+    previous_high_low_data = SMC.previous_high_low(window_df, time_frame="4h")
+    sessions = SMC.sessions(window_df, session="London")
+    retracements = SMC.retracements(window_df, swing_highs_lows_data)
+
     fig = add_FVG(fig, window_df, fvg_data)
     fig = add_swing_highs_lows(fig, window_df, swing_highs_lows_data)
     fig = add_bos_choch(fig, window_df, bos_choch_data)
